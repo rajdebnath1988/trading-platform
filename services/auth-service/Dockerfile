@@ -2,11 +2,11 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --only=production --no-audit && npm cache clean --force
+# npm install works without package-lock.json; npm ci requires it
+RUN npm install --omit=dev --no-audit && npm cache clean --force
 
 FROM node:20-alpine AS final
-# Remove npm from final image — eliminates ALL npm-related CVEs
-# (cross-spawn, glob, minimatch, tar vulnerabilities are npm CLI only)
+# Remove npm from final image — eliminates all npm CVEs
 RUN apk del --no-cache npm 2>/dev/null || true && \
     addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001

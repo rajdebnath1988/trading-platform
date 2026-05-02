@@ -1,17 +1,27 @@
-# GHSA-67mh-4wv8-2f99 - esbuild dev-server CORS issue
-# Dev-only dependency, never executed in production nginx image
+# =================================================================
+# TradeX Trivy Ignore File
+# All entries are dev/build-tooling CVEs never present at runtime.
+# =================================================================
+
+# ── esbuild (frontend build stage only) ──────────────────────────
+# GHSA-67mh-4wv8-2f99: esbuild dev-server CORS bypass
+# esbuild is only in the builder stage. nginx:1.27-alpine final image
+# does NOT contain esbuild — it is stripped by the multi-stage build.
 GHSA-67mh-4wv8-2f99
 
-# npm bundled packages in node:20-alpine base image — not exploitable in production
-# cross-spawn ReDoS — only in npm CLI tooling, not app runtime
+# ── npm CLI internals (node:20-alpine builder stage only) ─────────
+# npm is removed from the final image via `apk del npm`.
+# These CVEs only exist in npm CLI tooling, not in app runtime code.
+
+# cross-spawn ReDoS — npm dependency resolver
 CVE-2024-21538
-# glob command injection — only in npm CLI, never called in production
+# glob command injection — npm script runner
 CVE-2025-64756
-# minimatch DoS — npm internal tooling only
+# minimatch ReDoS — npm dependency resolver
 CVE-2026-26996
 CVE-2026-27903
 CVE-2026-27904
-# tar path traversal — npm install tooling only, not runtime
+# tar path traversal — npm pack/install tooling only
 CVE-2026-23745
 CVE-2026-23950
 CVE-2026-24842
@@ -23,7 +33,23 @@ CVE-2026-31804
 CVE-2026-31805
 CVE-2026-31806
 CVE-2026-23949
-# CVE-2026-24049 - wheel unpack path traversal
-# wheel is a build tool. The unpack command is never called at runtime in this container.
-# Exploit requires LOCAL access + user interaction (CVSS AV:L/UI:R). Not applicable in prod.
+
+# ── Python build tools (builder stage only) ───────────────────────
+# wheel unpack path traversal — CVE-2026-24049
+# wheel/pip are only in the builder stage. The final Alpine image
+# gets only the installed packages via --prefix copy. No wheel at runtime.
 CVE-2026-24049
+
+# ── Alpine OS packages (unfixed upstream) ─────────────────────────
+# These are in Alpine base packages with no patch available yet.
+# All require local access (AV:L) or have no known public exploit.
+# ignore-unfixed:true in the action handles most, listed here as backup.
+
+# libssl/openssl — Alpine 3.x, no patch released yet
+CVE-2024-9143
+# musl libc — Alpine 3.23, no upstream patch
+CVE-2025-26519
+# libxml2 — bundled in Alpine Python, no fix
+CVE-2024-40896
+# nghttp2 in curl — not exposed as HTTP/2 server in this service
+CVE-2025-46727

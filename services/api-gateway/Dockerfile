@@ -2,7 +2,7 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --only=production --no-audit && npm cache clean --force
+RUN npm install --omit=dev --no-audit && npm cache clean --force
 
 FROM node:20-alpine AS final
 RUN apk del --no-cache npm 2>/dev/null || true && \

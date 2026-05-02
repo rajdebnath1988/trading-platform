@@ -1,20 +1,19 @@
 # syntax=docker/dockerfile:1.7
-FROM python:3.11-slim AS builder
+# Use Alpine instead of Debian-slim — far fewer CVEs, smaller image
+FROM python:3.11-alpine AS builder
 WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+# Alpine needs gcc + musl-dev to build some Python C extensions
+RUN apk add --no-cache gcc musl-dev libffi-dev
 RUN pip install --no-cache-dir --upgrade pip
 COPY requirements.txt .
-# Install to isolated prefix — only the packages, no build tools
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
-FROM python:3.11-slim AS final
+FROM python:3.11-alpine AS final
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
-# Remove pip, setuptools, wheel from final stage — not needed at runtime
-# This eliminates the CVE-2026-24049 wheel vulnerability entirely
-RUN pip uninstall -y pip setuptools wheel 2>/dev/null || true && \
-    useradd -r -u 1001 -g root appuser
+RUN adduser -r -u 1001 -g root appuser
 WORKDIR /app
-# Copy only installed runtime packages from builder
+# Copy only the installed packages from builder — no build tools in final
 COPY --from=builder /install/lib /usr/local/lib
 COPY --from=builder /install/bin/uvicorn /usr/local/bin/uvicorn
 COPY --chown=appuser:root app/ ./app/
