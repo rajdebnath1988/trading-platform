@@ -10,17 +10,17 @@ resources:
 # Format: main-<short-sha>  e.g. main-abc1234
 images:
   - name: ghcr.io/rajdebnath1988/trading-frontend
-    newTag: "main-latest" # frontend
+    newTag: "main-6555d83" # frontend
   - name: ghcr.io/rajdebnath1988/trading-api-gateway
-    newTag: "main-latest" # api-gateway
+    newTag: "main-6555d83" # api-gateway
   - name: ghcr.io/rajdebnath1988/trading-auth-service
-    newTag: "main-latest" # auth-service
+    newTag: "main-6555d83" # auth-service
   - name: ghcr.io/rajdebnath1988/trading-market-data-service
-    newTag: "main-latest" # market-data-service
+    newTag: "main-6555d83" # market-data-service
   - name: ghcr.io/rajdebnath1988/trading-order-service
-    newTag: "main-latest" # order-service
+    newTag: "main-6555d83" # order-service
   - name: ghcr.io/rajdebnath1988/trading-portfolio-service
-    newTag: "main-latest" # portfolio-service
+    newTag: "main-6555d83" # portfolio-service
 
 commonLabels:
   environment: production
