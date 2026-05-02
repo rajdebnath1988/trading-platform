@@ -16,7 +16,7 @@ spec:
   - hosts:
     - tradexapp.click
     - www.tradexapp.click
-    secretName: tradex-tls
+    secretName: tradex-app-tls
   rules:
   - host: tradexapp.click
     http:
@@ -38,6 +38,13 @@ spec:
   - host: www.tradexapp.click
     http:
       paths:
+      - path: /api/
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway-active
+            port:
+              number: 3000
       - path: /
         pathType: Prefix
         backend:
