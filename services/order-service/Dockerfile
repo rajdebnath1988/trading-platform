@@ -4,6 +4,7 @@ COPY package*.json ./
 RUN npm ci --only=production && npm cache clean --force
 
 FROM node:20-alpine AS final
+RUN apk update && apk upgrade --no-cache
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
 WORKDIR /app
 COPY --from=deps --chown=nodejs:nodejs /app/node_modules ./node_modules

@@ -6,6 +6,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 FROM python:3.11-alpine AS final
+RUN apk update && apk upgrade --no-cache
 RUN useradd -r -u 1001 -g root appuser
 WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
