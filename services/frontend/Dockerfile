@@ -7,7 +7,7 @@ RUN npm ci
 COPY . .
 RUN npm run build && rm -rf node_modules
 
-FROM nginx:1.27-alpine AS final
+FROM nginx:1.28-alpine AS final
 RUN apk update && apk upgrade --no-cache
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
