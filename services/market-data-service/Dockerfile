@@ -11,7 +11,7 @@ RUN addgroup -g 1001 -S appuser && adduser -S -u 1001 -G appuser appuser
 WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 COPY --from=builder /install /usr/local
-RUN pip install --no-cache-dir --upgrade "wheel==0.46.2"
+RUN pip uninstall -y wheel && pip install --no-cache-dir "wheel==0.46.2"
 COPY --chown=appuser:root app/ ./app/
 USER appuser
 EXPOSE 8000
