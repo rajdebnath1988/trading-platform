@@ -22,3 +22,8 @@ CVE-2026-31803
 CVE-2026-31804
 CVE-2026-31805
 CVE-2026-31806
+CVE-2026-23949
+# CVE-2026-24049 - wheel unpack path traversal
+# wheel is a build tool. The unpack command is never called at runtime in this container.
+# Exploit requires LOCAL access + user interaction (CVSS AV:L/UI:R). Not applicable in prod.
+CVE-2026-24049

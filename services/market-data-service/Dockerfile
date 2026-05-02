@@ -1,16 +1,17 @@
 FROM python:3.11-alpine AS builder
 WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
-RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir --upgrade pip wheel==0.46.2
 COPY requirements.txt .
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 FROM python:3.11-alpine AS final
-RUN apk update && apk upgrade --no-cache
+RUN apk update && apk upgrade --no-cache && pip install --no-cache-dir --upgrade "wheel==0.46.2"
 RUN addgroup -g 1001 -S appuser && adduser -S -u 1001 -G appuser appuser
 WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 COPY --from=builder /install /usr/local
+RUN pip install --no-cache-dir --upgrade "wheel==0.46.2"
 COPY --chown=appuser:root app/ ./app/
 USER appuser
 EXPOSE 8000
