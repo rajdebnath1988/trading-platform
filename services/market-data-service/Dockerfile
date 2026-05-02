@@ -7,7 +7,7 @@ RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 FROM python:3.11-alpine AS final
 RUN apk update && apk upgrade --no-cache
-RUN useradd -r -u 1001 -g root appuser
+RUN addgroup -g 1001 -S appuser && adduser -S -u 1001 -G appuser appuser
 WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 COPY --from=builder /install /usr/local
