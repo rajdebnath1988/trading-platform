@@ -39,7 +39,7 @@ services:
     depends_on:
       postgresql: { condition: service_healthy }
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001/health"]
       <<: *hc-defaults
 
   market-data-service:
@@ -63,7 +63,7 @@ services:
     depends_on:
       postgresql: { condition: service_healthy }
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3003/health"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3003/health"]
       <<: *hc-defaults
 
   portfolio-service:
@@ -78,7 +78,7 @@ services:
     depends_on:
       postgresql: { condition: service_healthy }
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3004/health"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3004/health"]
       <<: *hc-defaults
 
   api-gateway:
@@ -99,7 +99,7 @@ services:
       order-service:      { condition: service_healthy }
       portfolio-service:  { condition: service_healthy }
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/health"]
       <<: *hc-defaults
 
   frontend:
