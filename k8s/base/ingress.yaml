@@ -6,17 +6,20 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-origin: "*"
-    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
-    nginx.ingress.kubernetes.io/cors-allow-headers: "Authorization, Content-Type"
-    # WebSocket support for market data
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   ingressClassName: nginx
+  tls:
+  - hosts:
+    - tradexapp.click
+    - www.tradexapp.click
+    secretName: tradex-tls
   rules:
-  - http:
+  - host: tradexapp.click
+    http:
       paths:
       - path: /api/
         pathType: Prefix
@@ -25,6 +28,16 @@ spec:
             name: api-gateway-active
             port:
               number: 3000
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-stable
+            port:
+              number: 80
+  - host: www.tradexapp.click
+    http:
+      paths:
       - path: /
         pathType: Prefix
         backend:
