@@ -118,6 +118,8 @@ jobs:
           ignore-unfixed: true
           vuln-type:      os,library
           timeout:        10m
+          trivyignores:   .trivyignore
+          skip-dirs:      /app/node_modules,/root/.npm
 
       - name: Upload Trivy SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v3

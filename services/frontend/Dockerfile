@@ -5,10 +5,9 @@ ENV VITE_API_URL=$VITE_API_URL
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN npm run build
+RUN npm run build && rm -rf node_modules
 
 FROM nginx:1.27-alpine AS final
-RUN apk update && apk upgrade --no-cache
 RUN apk update && apk upgrade --no-cache
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
