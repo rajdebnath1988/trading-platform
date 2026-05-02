@@ -7,7 +7,9 @@ RUN python -m venv /venv && \
     /venv/bin/pip install --no-cache-dir -r requirements.txt
 
 FROM python:3.11-alpine AS final
-RUN apk update && apk upgrade --no-cache
+RUN apk update && apk upgrade --no-cache \
+    && pip install --no-cache-dir --upgrade "setuptools>=82.0.0" "wheel==0.46.2" \
+    && pip install --no-cache-dir --upgrade "setuptools>=82.0.0" "wheel==0.46.2"
 RUN addgroup -g 1001 -S appuser && adduser -S -u 1001 -G appuser appuser
 WORKDIR /app
 COPY --from=builder /venv /venv
