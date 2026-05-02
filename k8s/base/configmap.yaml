@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: trading-platform
+data:
+  AUTH_SERVICE_URL:      "http://auth-service:3001"
+  MARKET_SERVICE_URL:    "http://market-data-service:8000"
+  ORDER_SERVICE_URL:     "http://order-service:3003"
+  PORTFOLIO_SERVICE_URL: "http://portfolio-service:3004"
+  NODE_ENV: "production"

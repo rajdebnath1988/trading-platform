@@ -1,0 +1,22 @@
+[extend]
+useDefault = true
+
+[[rules]]
+id = "custom-jwt-secret"
+description = "Hardcoded JWT secret"
+regex = '''(?i)jwt[_\-]?secret\s*[=:]\s*["'][^"']{8,}["']'''
+severity = "CRITICAL"
+
+[allowlist]
+description = "Global allowlist for placeholder values"
+paths = [
+  '''k8s/.*\.yaml$''',
+  '''docker-compose\.yml$''',
+  '''\.env\.example$''',
+]
+regexes = [
+  '''CHANGE_ME''',
+  '''YOUR_''',
+  '''local_dev''',
+  '''example''',
+]

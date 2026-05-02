@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: trading-platform
+
+resources:
+  - ../../base
+
+# Image tags are updated here by CI pipeline
+# Format: main-<short-sha>  e.g. main-abc1234
+images:
+  - name: ghcr.io/rajdebnath1988/trading-frontend
+    newTag: "main-latest" # frontend
+  - name: ghcr.io/rajdebnath1988/trading-api-gateway
+    newTag: "main-latest" # api-gateway
+  - name: ghcr.io/rajdebnath1988/trading-auth-service
+    newTag: "main-latest" # auth-service
+  - name: ghcr.io/rajdebnath1988/trading-market-data-service
+    newTag: "main-latest" # market-data-service
+  - name: ghcr.io/rajdebnath1988/trading-order-service
+    newTag: "main-latest" # order-service
+  - name: ghcr.io/rajdebnath1988/trading-portfolio-service
+    newTag: "main-latest" # portfolio-service
+
+commonLabels:
+  environment: production
+  managed-by: argocd

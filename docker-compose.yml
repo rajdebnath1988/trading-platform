@@ -1,0 +1,119 @@
+version: '3.8'
+
+x-node-env: &node-env
+  JWT_SECRET: ${JWT_SECRET:-local_dev_jwt_secret_change_in_prod_minimum_32chars}
+  NODE_ENV: development
+
+x-healthcheck-defaults: &hc-defaults
+  interval: 15s
+  timeout: 5s
+  retries: 5
+  start_period: 30s
+
+services:
+  postgresql:
+    image: postgres:15-alpine
+    container_name: tradex-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tradingdb
+      POSTGRES_USER: trading
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-Trading@Dev123}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trading -d tradingdb"]
+      <<: *hc-defaults
+
+  auth-service:
+    build: { context: ./services/auth-service, dockerfile: Dockerfile }
+    container_name: tradex-auth
+    restart: unless-stopped
+    environment:
+      <<: *node-env
+      DATABASE_URL: postgresql://trading:${DB_PASSWORD:-Trading@Dev123}@postgresql:5432/tradingdb
+      PORT: 3001
+    ports: ["3001:3001"]
+    depends_on:
+      postgresql: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      <<: *hc-defaults
+
+  market-data-service:
+    build: { context: ./services/market-data-service, dockerfile: Dockerfile }
+    container_name: tradex-market
+    restart: unless-stopped
+    ports: ["8000:8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      <<: *hc-defaults
+
+  order-service:
+    build: { context: ./services/order-service, dockerfile: Dockerfile }
+    container_name: tradex-orders
+    restart: unless-stopped
+    environment:
+      <<: *node-env
+      DATABASE_URL: postgresql://trading:${DB_PASSWORD:-Trading@Dev123}@postgresql:5432/tradingdb
+      PORT: 3003
+    ports: ["3003:3003"]
+    depends_on:
+      postgresql: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3003/health"]
+      <<: *hc-defaults
+
+  portfolio-service:
+    build: { context: ./services/portfolio-service, dockerfile: Dockerfile }
+    container_name: tradex-portfolio
+    restart: unless-stopped
+    environment:
+      <<: *node-env
+      DATABASE_URL: postgresql://trading:${DB_PASSWORD:-Trading@Dev123}@postgresql:5432/tradingdb
+      PORT: 3004
+    ports: ["3004:3004"]
+    depends_on:
+      postgresql: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3004/health"]
+      <<: *hc-defaults
+
+  api-gateway:
+    build: { context: ./services/api-gateway, dockerfile: Dockerfile }
+    container_name: tradex-gateway
+    restart: unless-stopped
+    environment:
+      <<: *node-env
+      AUTH_SERVICE_URL: http://auth-service:3001
+      MARKET_SERVICE_URL: http://market-data-service:8000
+      ORDER_SERVICE_URL: http://order-service:3003
+      PORTFOLIO_SERVICE_URL: http://portfolio-service:3004
+      PORT: 3000
+    ports: ["3000:3000"]
+    depends_on:
+      auth-service:       { condition: service_healthy }
+      market-data-service: { condition: service_healthy }
+      order-service:      { condition: service_healthy }
+      portfolio-service:  { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      <<: *hc-defaults
+
+  frontend:
+    build:
+      context: ./services/frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ""
+    container_name: tradex-frontend
+    restart: unless-stopped
+    ports: ["80:80"]
+    depends_on:
+      api-gateway: { condition: service_healthy }
+
+volumes:
+  pg_data:
+    driver: local

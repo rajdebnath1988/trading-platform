@@ -1,0 +1,112 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: frontend
+  namespace: trading-platform
+  labels:
+    app: frontend
+spec:
+  replicas: 3
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: frontend
+  strategy:
+    canary:
+      stableService: frontend-stable
+      canaryService: frontend-canary
+      trafficRouting:
+        nginx:
+          stableIngress: trading-platform-ingress
+          additionalIngressAnnotations:
+            canary-by-header: X-Canary
+      steps:
+      - setWeight: 10
+      - pause: { duration: 2m }
+      - analysis:
+          templates:
+          - templateName: health-check
+          args:
+          - name: service-name
+            value: frontend-canary
+          - name: service-port
+            value: "80"
+      - setWeight: 25
+      - pause: { duration: 2m }
+      - setWeight: 50
+      - pause: { duration: 1m }
+      - analysis:
+          templates:
+          - templateName: health-check
+          args:
+          - name: service-name
+            value: frontend-canary
+          - name: service-port
+            value: "80"
+      - setWeight: 75
+      - pause: { duration: 1m }
+      - setWeight: 100
+      maxSurge: "34%"
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      terminationGracePeriodSeconds: 15
+      containers:
+      - name: frontend
+        image: ghcr.io/rajdebnath1988/trading-frontend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+          name: http
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "25m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet: { path: /health, port: 80 }
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet: { path: /health, port: 80 }
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+# Stable service — receives traffic from main ingress
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-stable
+  namespace: trading-platform
+  labels:
+    app: frontend
+    slot: stable
+spec:
+  selector:
+    app: frontend
+  ports:
+  - port: 80
+    targetPort: 80
+    name: http
+---
+# Canary service — receives canary percentage
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-canary
+  namespace: trading-platform
+  labels:
+    app: frontend
+    slot: canary
+spec:
+  selector:
+    app: frontend
+  ports:
+  - port: 80
+    targetPort: 80
+    name: http

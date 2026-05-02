@@ -1,0 +1,62 @@
+name: OWASP ZAP Security Scan
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'  # Every Monday at 02:00 UTC
+  workflow_dispatch:       # Manual trigger from GitHub UI
+  push:
+    branches: [main]
+    paths:
+      - 'services/api-gateway/**'
+      - 'services/auth-service/**'
+
+jobs:
+  zap-scan:
+    name: "🕷️ OWASP ZAP — Dynamic Security Testing"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start all services with Docker Compose
+        run: |
+          cp .env.example .env
+          echo "JWT_SECRET=zap_scan_test_jwt_secret_32_chars_long" >> .env
+          echo "DB_PASSWORD=ZapScanTest123" >> .env
+          docker compose up -d
+          echo "Waiting for services to be healthy..."
+          timeout 120 bash -c 'until curl -sf http://localhost:3000/health; do sleep 3; done'
+          echo "Services are up!"
+
+      - name: ZAP Baseline Scan (passive — no attacks)
+        uses: zaproxy/action-baseline@v0.13.0
+        with:
+          target:          'http://localhost:3000'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options:     '-a -j -T 3'
+          issue_title:     'ZAP Baseline Scan Report'
+          fail_action:     false
+        continue-on-error: true
+
+      - name: ZAP API Scan (active — against OpenAPI spec)
+        uses: zaproxy/action-api-scan@v0.7.0
+        with:
+          target:      'http://localhost:8000/openapi.json'
+          format:      openapi
+          cmd_options: '-a -T 3'
+          fail_action: false
+        continue-on-error: true
+
+      - name: Upload ZAP HTML and JSON reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name:            zap-security-reports-${{ github.run_number }}
+          retention-days:  30
+          path: |
+            report_html.html
+            report_json.json
+            zap.out
+
+      - name: Tear down services
+        if: always()
+        run: docker compose down -v --remove-orphans
