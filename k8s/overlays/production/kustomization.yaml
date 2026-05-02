@@ -22,6 +22,3 @@ images:
   - name: ghcr.io/rajdebnath1988/trading-portfolio-service
     newTag: "main-67db0f1" # portfolio-service
 
-commonLabels:
-  environment: production
-  managed-by: argocd
