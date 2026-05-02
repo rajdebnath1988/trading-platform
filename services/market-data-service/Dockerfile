@@ -11,7 +11,7 @@ RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 FROM python:3.11-alpine AS final
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
-RUN adduser -r -u 1001 -g root appuser
+RUN addgroup -S appgroup && adduser -S -u 1001 -G appgroup appuser
 WORKDIR /app
 # Copy only the installed packages from builder — no build tools in final
 COPY --from=builder /install/lib /usr/local/lib
