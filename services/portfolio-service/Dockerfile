@@ -1,11 +1,13 @@
-FROM node:22-alpine AS deps
+# syntax=docker/dockerfile:1.7
+FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --only=production --no-audit && npm cache clean --force
 
-FROM node:22-alpine AS final
-RUN apk update && apk upgrade --no-cache
-RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+FROM node:20-alpine AS final
+RUN apk del --no-cache npm 2>/dev/null || true && \
+    addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
 WORKDIR /app
 COPY --from=deps --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --chown=nodejs:nodejs src/ ./src/
