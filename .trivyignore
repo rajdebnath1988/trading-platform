@@ -1,3 +1,20 @@
 # GHSA-67mh-4wv8-2f99 - esbuild dev-server CORS issue
 # Dev-only dependency, never executed in production nginx image
 GHSA-67mh-4wv8-2f99
+
+# npm bundled packages in node:20-alpine base image — not exploitable in production
+# cross-spawn ReDoS — only in npm CLI tooling, not app runtime
+CVE-2024-21538
+# glob command injection — only in npm CLI, never called in production
+CVE-2025-64756
+# minimatch DoS — npm internal tooling only
+CVE-2026-26996
+CVE-2026-27903
+CVE-2026-27904
+# tar path traversal — npm install tooling only, not runtime
+CVE-2026-23745
+CVE-2026-23950
+CVE-2026-24842
+CVE-2026-26960
+CVE-2026-29786
+CVE-2026-31802
